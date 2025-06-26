@@ -54,6 +54,11 @@ def threaded(clientSocket):
             break
     # connection closed
     clientSocket.close()
+    
+def bcstFunc(username, message):
+    for name, userSocket in userDatabase.items():
+        if name != username:
+            userSocket.send(f"{username}: {message}".encode())
 
 
 def main():
