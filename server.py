@@ -3,21 +3,44 @@ import sys
 import socket
 import threading
 
+userDatabase = dict()
 
 # thread function
-def threaded(cli_sock):
+def threaded(clientSocket):
+    username = None
     while True:
-        # data received from client
-        data = cli_sock.recv(1024)
-        if not data:
-            print('Disconnecting')
+        try:
+            # data received from client
+            data = clientSocket.recv(1024)
+            if not data:
+                print('Disconnecting')
+                break
+            
+            # using startwith() to check if user inputed JOIN
+            if data.startswith("JOIN "):
+                
+                # storing the user inputted name
+                name = data.split()[1]
+                if len(userDatabase) > 10:
+                    clientSocket.send("Too Many Users".encode())
+                elif len(userDatabase) <= 10:
+                    userDatabase[name] = clientSocket
+                    username = name
+                    print(f"{username} has joined the chat")
+                    
+                
+            elif data == "QUIT":
+                if username == True:
+                    userDatabase(data).pop()
+                    print(f"{username} is quitting hte server")
+                    
+                
+        
+        
+        except:
             break
-        # reverse the given string from client
-        data = data[::-1]
-        # send back reversed string to client
-        cli_sock.send(data)
     # connection closed
-    cli_sock.close()
+    clientSocket.close()
 
 
 def main():
@@ -38,12 +61,12 @@ def main():
     # a forever loop until client wants to exit
     while True:
         # establish connection with client
-        cli_sock, addr = serverSocket.accept()
+        clientSocket, addr = serverSocket.accept()
         # lock acquired by client
         # print_lock.acquire()
         print('Connected to :', addr[0], ':', addr[1])
         # Start a new thread and return its identifier
-        t1 = threading.Thread(target = threaded, args=(cli_sock,))
+        t1 = threading.Thread(target = threaded, args=(clientSocket,))
         # receive_thread = threading.Thread(target=receive,args=(nickname, client_socket,))
         t1.start()
     serverSocket.close()
