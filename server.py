@@ -46,7 +46,25 @@ def threaded(clientSocket):
                     # message contains all the items of the string after the command
                     broadcastMsg = data[5:]
                     clientSocket.send(f"{username} is sending a broadcast".encode())
+                    bcstFunc(username, broadcastMsg)
                     
+            elif data.startswith("MESG"):
+                userInput = data.split()
+                
+                # storing the name of recepcient 
+                recpName = userInput[1]
+                # storing the message of the user
+                message = userInput[2]
+                
+                # ensuring that user has enough arguments in command call
+                if len(userInput) < 3:
+                    print("Usage: MESG <User> <Message>")
+                    
+                if recpName in userDatabase:
+                    try:
+                        userDatabase[recpName].send(f"{username}: {message} ".encode())
+                    except:
+                        clientSocket.send("Error".encode())
                 
         
         
