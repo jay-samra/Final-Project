@@ -17,6 +17,7 @@ def threaded(clientSocket):
                 break
             
             # using startwith() to check if user inputed JOIN
+            data = data.decode().strip()
             if data.startswith("JOIN "):
                 
                 # storing the user inputted name
@@ -32,8 +33,8 @@ def threaded(clientSocket):
                     
                 
             elif data == "QUIT":
-                if username is not None:
-                    userDatabase(data).pop()
+                if username in userDatabase:
+                    del userDatabase[username]
                     print(f"{username} is quitting hte server")
                     
             elif data == "LIST":
@@ -54,7 +55,7 @@ def threaded(clientSocket):
                 # storing the name of recepcient 
                 recpName = userInput[1]
                 # storing the message of the user
-                message = userInput[2]
+                message = " ".join(userInput[2:])
                 
                 # ensuring that user has enough arguments in command call
                 if len(userInput) < 3:
