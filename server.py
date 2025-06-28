@@ -1,3 +1,6 @@
+# Abhijit Singh Ubhi, Jagmeet Singh, Jagroop Singh
+# Dr. Syed Badruddoja
+# Final Project
 
 import sys
 import socket
@@ -31,14 +34,18 @@ def threaded(clientSocket):
                     username = name
                     print(f"{username} has joined the chat")
                     
-                
+            # command for user to quit the chat   
             elif data == "QUIT":
                 if username in userDatabase:
+                    # if user quits the chat, they must be deleted from 
+                    # database to make space for new user
                     del userDatabase[username]
                     print(f"{username} is quitting hte server")
-                    
+            
+            # command to list all members of the voice chat
             elif data == "LIST":
                 if username is not None:
+                    # combining all members of the database using join
                     displayList = ", ".join(userDatabase.keys())
                     clientSocket.send(displayList.encode())
                     
@@ -46,10 +53,14 @@ def threaded(clientSocket):
                 if username is not None:
                     # message contains all the items of the string after the command
                     broadcastMsg = data[5:]
+                    # sending the message to all members of the voicechat
                     clientSocket.send(f"{username} is sending a broadcast".encode())
+                    # calling out Broadcast messaging function
                     bcstFunc(username, broadcastMsg)
+            
                     
             elif data.startswith("MESG"):
+                # spliting the user input since it contains MESG call and message string
                 userInput = data.split()
                 
                 # storing the name of recepcient 
@@ -60,9 +71,11 @@ def threaded(clientSocket):
                 # ensuring that user has enough arguments in command call
                 if len(userInput) < 3:
                     print("Usage: MESG <User> <Message>")
-                    
+                
+                # is the recepient actually exists in the user database, only then can the message be sent
                 if recpName in userDatabase:
                     try:
+                        # sending message to apporiate user
                         userDatabase[recpName].send(f"{username}: {message} ".encode())
                     except:
                         clientSocket.send("Error".encode())
@@ -74,8 +87,11 @@ def threaded(clientSocket):
     # connection closed
     clientSocket.close()
     
+# function created for the broadcast function
 def bcstFunc(username, message):
+    # sending a message to all members of the chat except to self
     for name, userSocket in userDatabase.items():
+        # ensuring msg is sent to everyone except the user
         if name != username:
             userSocket.send(f"{username}: {message}".encode())
 
@@ -85,11 +101,13 @@ def main():
     if len(sys.argv) != 2:
         print("Usage: python3 server.py <server_port>")
         sys.exit(1)
-        
+    
+    # storing the port number as an int
     port = int(sys.argv[1])
 
     # TCP server socket creation + binding
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # binding socket 
     serverSocket.bind(("0.0.0.0", port))
     
     serverSocket.listen(5)
@@ -98,14 +116,14 @@ def main():
     
     # a forever loop until client wants to exit
     while True:
+        
         # establish connection with client
         clientSocket, addr = serverSocket.accept()
-        # lock acquired by client
-        # print_lock.acquire()
+
         print('Connected to :', {addr})
-        # Start a new thread and return its identifier
+        # Start a new thread by using threading func
         t1 = threading.Thread(target = threaded, args=(clientSocket,))
-        # receive_thread = threading.Thread(target=receive,args=(nickname, client_socket,))
+        
         t1.start()
     serverSocket.close()
 
